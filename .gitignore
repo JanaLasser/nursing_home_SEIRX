@@ -1,0 +1,3 @@
+.ipynb_checkpoints
+*.R
+__pycache__
