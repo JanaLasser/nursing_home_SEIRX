@@ -179,6 +179,7 @@ def run_ensemble(N_runs, contact_weight, measures, simulation_params,
         if len(tmp) < comp_period:
             for i in range(0, comp_period - len(tmp) + 1):
                 tmp = tmp.append(tmp.loc[tmp.index[-1]], ignore_index=True)
+                tmp['t'] = range(len(tmp))
         observed_outbreaks = pd.concat([observed_outbreaks, tmp])
     observed_outbreaks = observed_outbreaks.reset_index()
         
@@ -224,7 +225,7 @@ def run_ensemble(N_runs, contact_weight, measures, simulation_params,
         # above truncating operation. We discard these cases.
         if len(data) == 0:
             continue
-                
+            
         data['run'] = run
         data['step'] = range(0, len(data))
         ensemble_runs = pd.concat([ensemble_runs, data])
@@ -259,17 +260,16 @@ def run_ensemble(N_runs, contact_weight, measures, simulation_params,
         # calculate the difference between the characteristics of the run and
         # the four observed outbreaks
         for outbreak in range(1, 5):
-            distribution_distance = calculate_distribution_difference(data,\
-                outbreak, emp_agent_numbers, observed_outbreaks, comp_period)
-            resident_ratio_distance = calculate_resident_ratio_difference(\
-                data, outbreak, observed_outbreaks, comp_period)
-            
+            employee_distance, resident_distance = \
+                calculate_infected_over_time_difference(data, outbreak, 
+                        emp_agent_numbers, observed_outbreaks, comp_period)
+        
             row.update({
-                'distribution_distance_outbreak_{}'.format(outbreak):\
-                    distribution_distance,
-                'resident_ratio_distance_outbreak_{}'.format(outbreak):\
-                    resident_ratio_distance
-                })
+                    'infected_employee_distance_outbreak_{}'.format(outbreak):\
+                        employee_distance,
+                    'infected_resident_distance_outbreak_{}'.format(outbreak):\
+                        resident_distance
+                    })
         
         # add run results to the ensemble results
         ensemble_results = ensemble_results.append(row, ignore_index=True)
@@ -278,6 +278,98 @@ def run_ensemble(N_runs, contact_weight, measures, simulation_params,
     ensemble_runs.to_csv(join(ensmbl_dst, 'cw-{:1.3f}.csv'\
             .format(contact_weight)), index=False)
     return ensemble_results
+
+
+def calculate_infected_over_time_difference(sim_data, outbreak, 
+                        emp_agent_numbers, observed_outbreaks, comp_period):
+    '''
+    Calculates the difference between the expected and simulated number of 
+    infected employees and residents (separately), given the empirically 
+    observed outbreak data in Austrian nursing homes and the number of infected 
+    in a given simulation.
+    
+    Parameters:
+    -----------
+    sim_data : pandas DataFrame
+        Data frame with the output of a single simulation in terms of the number
+        of susceptible, exposed, infected and recovered employees and residents
+        at every time-step of the simulation.
+    outbreak : integer
+        Label of the empirically observed outbreak the current simulation run
+        will be compared to.
+    emp_agent_numbers : pandas DataFrame
+        Data frame holding information about the total number of employees and
+        residents present in the homes in which the empirically observed
+        outbreaks took place.
+    observed_outbreaks : pandas DataFrame
+        Data frame holding information about the empirically observed outbreaks
+        in terms of the number of employees and residents that tested positive
+        over time.
+    comp_period : integer
+        Number of days in the empirical observations (and time steps in the
+        simulation) that will be used to compare the two. 
+        
+    Returns:
+    --------
+    distances : tuple
+        Tuple of floats holding the sum of squares of the difference between the
+        cumulative infected employees [residents] in the simulation and in the
+        empirically observed outbreak.
+    '''
+    # ********* data from the simulation ********* 
+    N_sim_employees = \
+            sim_data.loc[0]['S_employee'] + sim_data.loc[0]['E_employee'] +\
+            sim_data.loc[0]['I_employee'] + sim_data.loc[0]['R_employee']
+    N_sim_residents = \
+            sim_data.loc[0]['S_resident'] + sim_data.loc[0]['E_resident'] +\
+            sim_data.loc[0]['I_resident'] + sim_data.loc[0]['R_resident']
+    
+    # calculate the total number of all employees [residents] that are exposed,
+    # infected or recovered over time (cumulative infected)
+    sim_data['cumulative_I_employee'] = sim_data['E_employee'] + \
+            sim_data['I_employee'] + sim_data['R_employee']
+    sim_data['cumulative_I_resident'] = sim_data['E_resident'] + \
+            sim_data['I_resident'] + sim_data['R_resident']
+
+    # normalise the number of infected with the total number of employees 
+    # [residents] in the simulation
+    sim_data['cumulative_I_employee'] = sim_data['cumulative_I_employee'] / \
+                                        N_sim_employees
+    sim_data['cumulative_I_resident'] = sim_data['cumulative_I_resident'] / \
+                                        N_sim_residents
+
+    # ********* empirical outbreak data ********* 
+    N_emp_employees = emp_agent_numbers.loc[outbreak,'total_employees']
+    N_emp_residents = emp_agent_numbers.loc[outbreak,'total_residents']
+    emp_data = observed_outbreaks[observed_outbreaks['outbreak'] == outbreak]\
+        .copy()
+    
+    # normalisation
+    emp_data['cumulative_I_employee'] = emp_data['cumulative_I_employee'] / \
+                                        N_emp_employees
+    emp_data['cumulative_I_resident'] = emp_data['cumulative_I_resident'] / \
+                                        N_emp_residents
+
+    # truncate both vectors to have the same length, do not use more than the
+    # first comp_period days to compare outbreaks.
+    min_T = min(len(emp_data['cumulative_I_employee']),\
+                len(sim_data['cumulative_I_employee']))
+    if min_T > comp_period: min_T = comp_period
+    sim_data = sim_data[0:min_T]
+    emp_data = emp_data[0:min_T]
+    
+    # the error metric is the sum of the squared distances between the 
+    # cumulative number of infected employees [residents] in the simulation and
+    # the observed outbreak
+    diff_employee = (emp_data['cumulative_I_employee'].values - \
+                     sim_data['cumulative_I_employee'].values) ** 2
+    distance_employee = diff_employee.sum()
+    diff_resident = (emp_data['cumulative_I_resident'].values - \
+                     sim_data['cumulative_I_resident'].values) ** 2
+    distance_resident = diff_resident.sum()
+    
+    distances = (distance_employee, distance_resident)
+    return distances
 
 
 def calculate_distribution_difference(sim_data, outbreak, emp_agent_numbers,
@@ -469,9 +561,9 @@ def evaluate_ensemble(ensemble_results, contact_weight):
                 'predetected_infections']
     
     eval_cols = eval_cols + \
-        ['distribution_distance_outbreak_{}'.format(i) for i in range(1, 5)]
+        ['infected_employee_distance_outbreak_{}'.format(i) for i in range(1, 5)]
     eval_cols = eval_cols + \
-        ['resident_ratio_distance_outbreak_{}'.format(i) for i in range(1, 5)]
+        ['infected_resident_distance_outbreak_{}'.format(i) for i in range(1, 5)]
     
     for col in eval_cols:
         row.update(af.get_statistics(ensemble_results, col))
