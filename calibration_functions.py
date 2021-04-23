@@ -470,7 +470,7 @@ def plot_errors(ax, results, best_weight, xmin=0.1):
     ax.plot([best_weight, best_weight], [0, ymax],'--', color='k', label='optimum')
     ax.text(0.165, 12.5, 'contact weight = {:1.2f}'.format(best_weight))
 
-    ax.legend(loc=9)
+    ax.legend(loc=9, fontsize=11.3)
     ax.set_xlim(xmin, 0.5)
     ax.set_ylim(-0.5, ymax)
     ax.set_xlabel('contact weight', fontsize=16)
@@ -531,7 +531,28 @@ def plot_emp_sim_data(ax, emp_data, agg, comp_period):
 
     ax.set_xlim(0, comp_period + 0.5)
     ax.set_ylim(0, 27)
-    ax.legend(fontsize=8, ncol=3, loc=1)
+    
+    # legend
+    from matplotlib.patches import Patch
+    from matplotlib.pyplot import Line2D
+    alpha=0.2
+    res_handle = Patch(facecolor='FireBrick',label='residents', alpha=alpha)
+    emp_handle = Patch(facecolor='DarkBlue',label='employees', alpha=alpha)
+
+    sim_handle = Line2D((0,1),(0,0), color='k', linewidth=5)
+    case1_handle = Line2D((0,1),(0,0), color='k', marker='o', linestyle='',
+                              markersize=10)
+    case2_handle = Line2D((0,1),(0,0), color='k', marker='*', linestyle='',
+                              markersize=10)
+    case3_handle = Line2D((0,1),(0,0), color='k', marker='X', linestyle='',
+                              markersize=10)
+    case4_handle = Line2D((0,1),(0,0), color='k', marker='^', linestyle='',
+                              markersize=10)
+
+    legend = ax.legend([case1_handle, case2_handle,
+               case3_handle, case4_handle, res_handle, emp_handle, sim_handle],
+              ['outbreak 1', 'outbreak 2', 'outbreak 3', 'outbreak 4', 'residents',
+               'employees', 'simulation'], loc=9, ncol=2, fontsize=11.3)
     
     ax.set_xlabel('days', fontsize=16)
     ax.set_ylabel('N infected', fontsize=16)
