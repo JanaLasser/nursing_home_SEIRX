@@ -1,11 +1,11 @@
 # Agent based simulations of the spread of COVID 19 in nursing homes
-This repository includes code to run agent based simulations for the spread of a disease (in this case SARS-CoV-2) in a nursing home. The simulations make use of the [small community SEIRX (scseirx) package](https://pypi.org/project/scseirx/) that was developed for this application and the application in the context of schools (TODO: link needed).
+This repository includes code to run agent based simulations for the spread of a disease (in this case SARS-CoV-2) in a nursing home. The simulations make use of the [small community SEIRX (scseirx) package](https://pypi.org/project/scseirx/) that was developed for this application and the application in the context of [schools](https://www.medrxiv.org/content/10.1101/2021.04.13.21255320v1).
 
 ## Reference
 To reference this work, please cite this [preprint](https://osf.io/5xdqe/). 
 
 ## Data
-Whenever folders are referenced in the following description, they are located in the OSF-repository belonging to this project (TODO: link needed). Exceptions to that rule are indicated accordingly.
+Whenever folders are referenced in the following description, they are located in the [OSF-repository](https://osf.io/hyd4r/) belonging to this project. Exceptions to that rule are indicated accordingly.
 
 ## Repository content
 The content of the repository is divided into four parts:
