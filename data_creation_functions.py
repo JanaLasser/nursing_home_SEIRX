@@ -108,8 +108,7 @@ def run_model(test_type, index_case, e_screen_interval, r_screen_interval,
                  simulation_params['infection_risk_contact_type_weights'],
       K1_contact_types = measures['K1_contact_types'],
       diagnostic_test_type = measures['diagnostic_test_type'],
-      preventive_screening_test_type = \
-                 measures['preventive_screening_test_type'],
+      preventive_screening_test_type = test_type,
       follow_up_testing_interval = \
                  measures['follow_up_testing_interval'],
       liberating_testing = measures['liberating_testing'],
