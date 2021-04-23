@@ -1,3 +1,7 @@
 .ipynb_checkpoints
 *.R
 __pycache__
+deprecated/
+data_cleaning.ipynb
+strip_contact_data.ipynb
+parse_temporal_networks.ipynb
