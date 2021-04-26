@@ -476,7 +476,7 @@ def plot_errors(ax, results, best_weight, xmin=0.1):
     ax.set_xticks([0.1, 0.2, 0.3, 0.4, 0.5])
     ax.set_xticklabels([1 - 0.1, 1 - 0.2, 1 - 0.3, 1 - 0.4, 1 - 0.5])
     ax.set_xlabel('$q_2$', fontsize=16)
-    ax.set_ylabel('$\\chi^2$-distance', fontsize=16)
+    ax.set_ylabel('sum of squared differences', fontsize=16)
     
 
 def plot_emp_sim_data(ax, emp_data, agg, comp_period):
