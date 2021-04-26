@@ -446,15 +446,15 @@ def plot_errors(ax, results, best_weight, xmin=0.1):
     '''
     ax.plot(results.index.get_level_values('contact_weight'), 
             results['infected_employee_distance_total_mean'],
-           'o-', color='FireBrick', label='employee error')
+           'o-', color='FireBrick', label='$e_1$')
 
     ax.plot(results.index.get_level_values('contact_weight'), 
             results['infected_resident_distance_total_mean'],
-           'o-', color='DarkBlue', label='resident error')
+           'o-', color='DarkBlue', label='$e_2$')
 
     ax.plot(results.index.get_level_values('contact_weight'), 
             results['distance_total'],
-           'o-', color='grey', label='total error')
+           'o-', color='grey', label='$E$')
     ax.fill_between(results.index.get_level_values('contact_weight'), 
             results['distance_total'],
             results['distance_total'] - \
@@ -468,13 +468,15 @@ def plot_errors(ax, results, best_weight, xmin=0.1):
 
     ymax = 20
     ax.plot([best_weight, best_weight], [0, ymax],'--', color='k', label='optimum')
-    ax.text(0.165, 12.5, 'contact weight = {:1.2f}'.format(best_weight))
+    ax.text(0.165, 12.5, '$q_2$ = {:1.2f}'.format(1 - best_weight))
 
     ax.legend(loc=9, fontsize=11.3)
     ax.set_xlim(xmin, 0.5)
     ax.set_ylim(-0.5, ymax)
-    ax.set_xlabel('contact weight', fontsize=16)
-    ax.set_ylabel('error', fontsize=16)
+    ax.set_xticks([0.1, 0.2, 0.3, 0.4, 0.5])
+    ax.set_xticklabels([1 - 0.1, 1 - 0.2, 1 - 0.3, 1 - 0.4, 1 - 0.5])
+    ax.set_xlabel('$q_2$', fontsize=16)
+    ax.set_ylabel('$\\chi^2$-distance', fontsize=16)
     
 
 def plot_emp_sim_data(ax, emp_data, agg, comp_period):
@@ -510,13 +512,16 @@ def plot_emp_sim_data(ax, emp_data, agg, comp_period):
 
         ax.plot(agg.index, agg['I_total_{}'.format(agent_type)]['mean'],
                 color=color, label='sim. I {}.'.format(agent_type[0:3]))
-        ax.fill_between(agg.index, agg['I_total_{}'.format(agent_type)]['mean'],
-                                   agg['I_total_{}'.format(agent_type)]['mean'] -\
-                                   agg['I_total_{}'.format(agent_type)]['std'],
-                                   color=color, alpha=0.2)
-        ax.fill_between(agg.index, agg['I_total_{}'.format(agent_type)]['mean'],
-                                   agg['I_total_{}'.format(agent_type)]['mean'] +\
-                                   agg['I_total_{}'.format(agent_type)]['std'],
+        #ax.fill_between(agg.index, agg['I_total_{}'.format(agent_type)]['mean'],
+        #                           agg['I_total_{}'.format(agent_type)]['mean'] -\
+        #                           agg['I_total_{}'.format(agent_type)]['std'],
+        #                           color=color, alpha=0.2)
+        #ax.fill_between(agg.index, agg['I_total_{}'.format(agent_type)]['mean'],
+        #                           agg['I_total_{}'.format(agent_type)]['mean'] +\
+        #                           agg['I_total_{}'.format(agent_type)]['std'],
+        #                           color=color, alpha=0.2)
+        ax.fill_between(agg.index, agg['I_total_{}'.format(agent_type)]['percentile_10'],
+                                   agg['I_total_{}'.format(agent_type)]['percentile_90'],
                                    color=color, alpha=0.2)
 
     ax.plot(np.zeros(1), np.zeros([1, 2]), color='w', alpha=0, label=' ')
@@ -536,8 +541,8 @@ def plot_emp_sim_data(ax, emp_data, agg, comp_period):
     from matplotlib.patches import Patch
     from matplotlib.pyplot import Line2D
     alpha=0.2
-    res_handle = Patch(facecolor='FireBrick',label='residents', alpha=alpha)
-    emp_handle = Patch(facecolor='DarkBlue',label='employees', alpha=alpha)
+    emp_handle = Patch(facecolor='FireBrick',label='employees', alpha=alpha)
+    res_handle = Patch(facecolor='DarkBlue',label='residents', alpha=alpha)
 
     sim_handle = Line2D((0,1),(0,0), color='k', linewidth=5)
     case1_handle = Line2D((0,1),(0,0), color='k', marker='o', linestyle='',
