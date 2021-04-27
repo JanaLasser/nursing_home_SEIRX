@@ -131,7 +131,6 @@ def run_model(test_type, index_case, e_screen_interval, r_screen_interval,
         
     return model
 
-
 def run_ensemble(N_runs, test_type, index_case, e_screen_interval, 
                  r_screen_interval, measures, simulation_params, 
                  contact_network_src, ensmbl_dst):
@@ -222,8 +221,9 @@ def run_ensemble(N_runs, test_type, index_case, e_screen_interval,
                 ignore_index=True)
         
     ensemble_runs = ensemble_runs.reset_index(drop=True)
-    ensemble_runs.to_csv(join(ensmbl_dst, 'test-{}_esi-{}_rsi-{}.csv'\
-        .format(test_type, e_screen_interval, r_screen_interval)), index=False)
+    ensemble_runs.to_csv(join(ensmbl_dst, 'test-{}_index-{}_esi-{}_rsi-{}.csv'\
+        .format(test_type, index_case, e_screen_interval, r_screen_interval)),
+                         index=False)
         
     return ensemble_results
 
