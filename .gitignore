@@ -4,4 +4,6 @@ __pycache__
 deprecated/
 data_cleaning.ipynb
 strip_contact_data.ipynb
-parse_temporal_networks.ipynb
+parse_temporal_networks.ipynbdata/
+data/
+.DS_Store
