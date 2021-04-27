@@ -134,7 +134,7 @@ def run_model(test_type, index_case, e_screen_interval, r_screen_interval,
 
 def run_ensemble(N_runs, test_type, index_case, e_screen_interval, 
                  r_screen_interval, measures, simulation_params, 
-                 contact_network_src):
+                 contact_network_src, ensmbl_dst):
     '''
     Utility function to run an ensemble of simulations for a given parameter 
     combination.
@@ -176,6 +176,7 @@ def run_ensemble(N_runs, test_type, index_case, e_screen_interval,
     '''
     
     ensemble_results = pd.DataFrame()
+    ensemble_runs = pd.DataFrame()
     for run in range(1, N_runs + 1):
         model = run_model(test_type, index_case, e_screen_interval,
                           r_screen_interval, measures, simulation_params,
@@ -197,6 +198,10 @@ def run_ensemble(N_runs, test_type, index_case, e_screen_interval,
         undetected_infections = data['undetected_infections'].max()
         predetected_infections = data['predetected_infections'].max()
         duration = len(data)
+        
+        data['run'] = run
+        data['step'] = range(0, len(data))
+        ensemble_runs = pd.concat([ensemble_runs, data])
 
         # add run results to the ensemble results
         ensemble_results = ensemble_results.append({ 
@@ -215,6 +220,10 @@ def run_ensemble(N_runs, test_type, index_case, e_screen_interval,
                   'predetected_infections':predetected_infections,
                   'duration':duration},
                 ignore_index=True)
+        
+    ensemble_runs = ensemble_runs.reset_index(drop=True)
+    ensemble_runs.to_csv(join(ensmbl_dst, 'test-{}_esi-{}_rsi-{}.csv'\
+        .format(test_type, e_screen_interval, r_screen_interval)), index=False)
         
     return ensemble_results
 
