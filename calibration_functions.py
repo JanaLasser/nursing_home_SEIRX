@@ -468,14 +468,14 @@ def plot_errors(ax, results, best_weight, xmin=0.1):
 
     ymax = 20
     ax.plot([best_weight, best_weight], [0, ymax],'--', color='k', label='optimum')
-    ax.text(0.165, 12.5, '$q_2$ = {:1.2f}'.format(1 - best_weight))
+    ax.text(0.165, 12.5, '$q_1$ = {:1.2f}'.format(1 - best_weight))
 
     ax.legend(loc=9, fontsize=11.3)
     ax.set_xlim(xmin, 0.5)
     ax.set_ylim(-0.5, ymax)
     ax.set_xticks([0.1, 0.2, 0.3, 0.4, 0.5])
     ax.set_xticklabels([1 - 0.1, 1 - 0.2, 1 - 0.3, 1 - 0.4, 1 - 0.5])
-    ax.set_xlabel('$q_2$', fontsize=16)
+    ax.set_xlabel('$q_1$', fontsize=16)
     ax.set_ylabel('sum of squared differences', fontsize=16)
     
 
@@ -512,14 +512,6 @@ def plot_emp_sim_data(ax, emp_data, agg, comp_period):
 
         ax.plot(agg.index, agg['I_total_{}'.format(agent_type)]['mean'],
                 color=color, label='sim. I {}.'.format(agent_type[0:3]))
-        #ax.fill_between(agg.index, agg['I_total_{}'.format(agent_type)]['mean'],
-        #                           agg['I_total_{}'.format(agent_type)]['mean'] -\
-        #                           agg['I_total_{}'.format(agent_type)]['std'],
-        #                           color=color, alpha=0.2)
-        #ax.fill_between(agg.index, agg['I_total_{}'.format(agent_type)]['mean'],
-        #                           agg['I_total_{}'.format(agent_type)]['mean'] +\
-        #                           agg['I_total_{}'.format(agent_type)]['std'],
-        #                           color=color, alpha=0.2)
         ax.fill_between(agg.index, agg['I_total_{}'.format(agent_type)]['percentile_10'],
                                    agg['I_total_{}'.format(agent_type)]['percentile_90'],
                                    color=color, alpha=0.2)
