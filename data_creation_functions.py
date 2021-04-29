@@ -192,11 +192,14 @@ def run_ensemble(N_runs, test_type, index_case, e_screen_interval,
         N_employee_screens_preventive = data['screen_employees_preventive'].sum()
         N_diagnostic_tests = data['N_diagnostic_tests'].max()
         N_preventive_screening_tests = data['N_preventive_screening_tests'].max()
+        N_tests = N_diagnostic_tests + N_preventive_screening_tests
         transmissions = sum([a.transmissions for a in model.schedule.agents])
         pending_test_infections = data['pending_test_infections'].max()
         undetected_infections = data['undetected_infections'].max()
         predetected_infections = data['predetected_infections'].max()
         duration = len(data)
+        N_agents = len(model.schedule.agents)
+        test_rate = N_tests / duration / N_agents
         
         data['run'] = run
         data['step'] = range(0, len(data))
@@ -213,11 +216,14 @@ def run_ensemble(N_runs, test_type, index_case, e_screen_interval,
                   'N_employee_screens_preventive':N_employee_screens_preventive,
                   'N_diagnostic_tests':N_diagnostic_tests,
                   'N_preventive_tests':N_preventive_screening_tests,
+                  'N_tests':N_tests,
                   'transmissions':transmissions,
                   'pending_test_infections':pending_test_infections,
                   'undetected_infections':undetected_infections,
                   'predetected_infections':predetected_infections,
-                  'duration':duration},
+                  'duration':duration,
+                  'N_agents':N_agents,
+                  'test_rate':test_rate},
                 ignore_index=True)
         
     ensemble_runs = ensemble_runs.reset_index(drop=True)
@@ -277,7 +283,7 @@ def evaluate_ensemble(ensemble_results, test_type, index_case, e_screen_interval
                 'N_resident_screens_preventive', 'N_employee_screens_preventive',
                 'N_diagnostic_tests', 'N_preventive_tests', 'transmissions', 
                 'pending_test_infections', 'undetected_infections',
-                'predetected_infections', 'duration']:
+                'predetected_infections', 'duration', 'N_tests', 'N_agents', 'test_rate']:
 
         row.update(af.get_statistics(ensemble_results, col))
     
