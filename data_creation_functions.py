@@ -6,8 +6,8 @@ import networkx as nx
 from os.path import join
 
 
-def compose_agents(measures, simulation_params,
-                   e_screen_interval, r_screen_interval):
+def compose_agents(measures, simulation_params, e_screen_interval, r_screen_interval, e_vaccination_probability, r_vaccination_probability):
+                   
     '''
     Utility function to compose agent dictionaries as expected by the simulation
     model as input from the dictionary of prevention measures.
@@ -31,21 +31,22 @@ def compose_agents(measures, simulation_params,
     '''
     agent_types = {
         'employee':{
-            'screening_interval':e_screen_interval,
+            'screening_interval': e_screen_interval,
             'index_probability':simulation_params['employee_index_probability'],
-            'mask':measures['employee_mask']},
+            'mask':measures['employee_mask'],
+            'vaccination_probability': e_vaccination_probability}, #measures['employee_vaccination']},
 
         'resident':{
-            'screening_interval':r_screen_interval,
+            'screening_interval': r_screen_interval,
             'index_probability':simulation_params['resident_index_probability'],
-            'mask':measures['resident_mask']},
+            'mask':measures['resident_mask'],
+            'vaccination_probability': r_vaccination_probability}, #measures['resident_vaccination']},
     }
     return agent_types
 
 
-def run_model(test_type, index_case, e_screen_interval, r_screen_interval, 
-              measures, simulation_params, contact_network_src,
-              N_steps=500):
+def run_model(test_type, index_case, e_screen_interval, r_screen_interval, e_vaccination_probability, r_vaccination_probability, measures, simulation_params, contact_network_src, N_steps=500):
+    
     '''
     Runs a simulation with an SEIRX_nursing_home model 
     (see https://pypi.org/project/scseirx/1.3.0/), given a set of parameters.
@@ -87,8 +88,8 @@ def run_model(test_type, index_case, e_screen_interval, r_screen_interval,
     model : SEIRX_nursing_home model instance holding a completed simulation run
         and all associated data.
     '''
-    agent_types = compose_agents(measures, simulation_params,
-                                 e_screen_interval, r_screen_interval)
+    agent_types = compose_agents(measures, simulation_params,e_screen_interval, r_screen_interval, e_vaccination_probability, r_vaccination_probability)
+                                 
 
     # load the contact graph for a single living unit in a nursing home
     G = nx.readwrite.gpickle.read_gpickle(\
@@ -119,7 +120,9 @@ def run_model(test_type, index_case, e_screen_interval, r_screen_interval,
       age_symptom_discount = simulation_params['age_symptom_discount'],
       mask_filter_efficiency = measures['mask_filter_efficiency'],
       transmission_risk_ventilation_modifier = \
-                measures['transmission_risk_ventilation_modifier'],)
+                measures['transmission_risk_ventilation_modifier'],
+      transmission_risk_vaccination_modifier = \
+                measures['transmission_risk_vaccination_modifier'],)
 
     # run the model until the outbreak is over
     for i in range(N_steps):
@@ -132,8 +135,9 @@ def run_model(test_type, index_case, e_screen_interval, r_screen_interval,
     return model
 
 
-def run_ensemble(N_runs, test_type, index_case, e_screen_interval, 
-                 r_screen_interval, measures, simulation_params, 
+def run_ensemble(N_runs, test_type, index_case, e_screen_interval, r_screen_interval, 
+                 e_vaccination_probability, r_vaccination_probability,
+                 measures, simulation_params, 
                  contact_network_src):
     '''
     Utility function to run an ensemble of simulations for a given parameter 
@@ -177,9 +181,10 @@ def run_ensemble(N_runs, test_type, index_case, e_screen_interval,
     
     ensemble_results = pd.DataFrame()
     for run in range(1, N_runs + 1):
-        model = run_model(test_type, index_case, e_screen_interval,
-                          r_screen_interval, measures, simulation_params,
-                          contact_network_src,)
+        model = run_model(test_type, index_case, e_screen_interval, r_screen_interval,
+                          e_vaccination_probability, r_vaccination_probability, 
+                          measures, simulation_params,
+                          contact_network_src,) 
         
         # collect the statistics of the single run
         R0, _ = af.calculate_finite_size_R0(model)
@@ -219,8 +224,7 @@ def run_ensemble(N_runs, test_type, index_case, e_screen_interval,
     return ensemble_results
 
 
-def evaluate_ensemble(ensemble_results, test_type, index_case, e_screen_interval, 
-                      r_screen_interval):
+def evaluate_ensemble(ensemble_results, test_type, index_case,e_screen_interval, r_screen_interval,  e_vaccination_probability, r_vaccination_probability): 
     '''
     Utility function to calculate ensemble statistics.
     
@@ -260,8 +264,9 @@ def evaluate_ensemble(ensemble_results, test_type, index_case, e_screen_interval
     # add ensemble statistics to the overall results
     row = {'test_type':test_type,
            'index_case':index_case,
-           'resident_screen_interval':r_screen_interval,
-           'employee_screen_interval':e_screen_interval}
+           'resident_vaccination_probability': r_vaccination_probability,
+           'employee_vaccination_probability': e_vaccination_probability}
+   
     
     for col in ['R0', 'infected_residents', 'infected_employees', 
                 'N_resident_screens_reactive', 'N_employee_screens_reactive',
