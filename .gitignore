@@ -6,4 +6,5 @@ data_cleaning.ipynb
 strip_contact_data.ipynb
 parse_temporal_networks.ipynbdata/
 data/
+plots/
 .DS_Store
