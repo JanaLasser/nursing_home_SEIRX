@@ -264,8 +264,8 @@ def evaluate_ensemble(ensemble_results, test_type, index_case,e_screen_interval,
     # add ensemble statistics to the overall results
     row = {'test_type':test_type,
            'index_case':index_case,
-           'resident_vaccination_probability': r_vaccination_probability,
-           'employee_vaccination_probability': e_vaccination_probability}
+           'resident_screen_interval': r_screen_interval,
+           'employee_screen_interval': e_screen_interval}
    
     
     for col in ['R0', 'infected_residents', 'infected_employees', 
