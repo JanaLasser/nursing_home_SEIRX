@@ -6,8 +6,9 @@ import networkx as nx
 from os.path import join
 
 
-def compose_agents(measures, simulation_params, e_vaccination_ratio,
-                   r_vaccination_ratio):
+def compose_agents(measures, simulation_params, e_screen_interval, 
+                   r_screen_interval, e_vaccination_probability,
+                   r_vaccination_probability):
                    
     '''
     Utility function to compose agent dictionaries as expected by the simulation
@@ -32,21 +33,22 @@ def compose_agents(measures, simulation_params, e_vaccination_ratio,
     '''
     agent_types = {
         'employee':{
-            'screening_interval': None,
+            'screening_interval': e_screen_interval,
             'index_probability':simulation_params['employee_index_probability'],
             'mask':measures['employee_mask'],
-            'vaccination_ratio': e_vaccination_ratio},
+            'vaccination_probability': e_vaccination_probability},
 
         'resident':{
-            'screening_interval': None,
+            'screening_interval': r_screen_interval,
             'index_probability':simulation_params['resident_index_probability'],
             'mask':measures['resident_mask'],
-            'vaccination_ratio': r_vaccination_ratio},
+            'vaccination_probability': r_vaccination_probability},
     }
     return agent_types
 
 
-def run_model(index_case, e_vaccination_probability, r_vaccination_probability,
+def run_model(test_type, index_case, e_screen_interval, r_screen_interval, 
+              e_vaccination_probability, r_vaccination_probability,
               measures, simulation_params, contact_network_src, N_steps=500):
     
     '''
@@ -90,8 +92,9 @@ def run_model(index_case, e_vaccination_probability, r_vaccination_probability,
     model : SEIRX_nursing_home model instance holding a completed simulation run
         and all associated data.
     '''
-    agent_types = compose_agents(measures, simulation_params,
-                        e_vaccination_probability, r_vaccination_probability)
+    agent_types = compose_agents(measures, simulation_params, e_screen_interval,
+                        r_screen_interval, e_vaccination_probability,
+                        r_vaccination_probability)
                                  
 
     # load the contact graph for a single living unit in a nursing home
@@ -112,7 +115,7 @@ def run_model(index_case, e_vaccination_probability, r_vaccination_probability,
                  simulation_params['infection_risk_contact_type_weights'],
       K1_contact_types = measures['K1_contact_types'],
       diagnostic_test_type = measures['diagnostic_test_type'],
-      preventive_screening_test_type = None,
+      preventive_screening_test_type = test_type,
       follow_up_testing_interval = \
                  measures['follow_up_testing_interval'],
       liberating_testing = measures['liberating_testing'],
@@ -138,7 +141,8 @@ def run_model(index_case, e_vaccination_probability, r_vaccination_probability,
     return model
 
 
-def run_ensemble(N_runs, index_case, e_vaccination_probability,
+def run_ensemble(N_runs, test_type, index_case, e_screen_interval, 
+                 r_screen_interval, e_vaccination_probability,
                  r_vaccination_probability, measures, simulation_params, 
                  contact_network_src):
     '''
@@ -183,7 +187,8 @@ def run_ensemble(N_runs, index_case, e_vaccination_probability,
     
     ensemble_results = pd.DataFrame()
     for run in range(1, N_runs + 1):
-        model = run_model(index_case, e_vaccination_probability,
+        model = run_model(test_type, index_case, e_screen_interval, 
+                          r_screen_interval, e_vaccination_probability,
                           r_vaccination_probability,measures, simulation_params,
                           contact_network_src,) 
         
@@ -225,7 +230,8 @@ def run_ensemble(N_runs, index_case, e_vaccination_probability,
     return ensemble_results
 
 
-def evaluate_ensemble(ensemble_results, index_case, e_vaccination_probability,
+def evaluate_ensemble(ensemble_results, test_type, index_case, e_screen_interval,
+                      r_screen_interval, e_vaccination_probability,
                       r_vaccination_probability): 
     '''
     Utility function to calculate ensemble statistics.
@@ -264,7 +270,10 @@ def evaluate_ensemble(ensemble_results, index_case, e_vaccination_probability,
         respective observables of interest.
     '''
     # add ensemble statistics to the overall results
-    row = {'index_case':index_case,
+    row = {'test_type':test_type,
+           'index_case':index_case,
+           'resident_screen_interval':r_screen_interval,
+           'employee_screen_interval':e_screen_interval,
            'resident_vaccination_probability': r_vaccination_probability,
            'employee_vaccination_probability': e_vaccination_probability}
    

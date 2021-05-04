@@ -6,8 +6,8 @@ import networkx as nx
 from os.path import join
 
 
-def compose_agents(measures, simulation_params,
-                   e_screen_interval, r_screen_interval):
+def compose_agents(measures, simulation_params, e_screen_interval,
+                   r_screen_interval, e_vaccination_ratio, r_vaccination_ratio):
     '''
     Utility function to compose agent dictionaries as expected by the simulation
     model as input from the dictionary of prevention measures.
@@ -17,9 +17,19 @@ def compose_agents(measures, simulation_params,
     measures : dictionary
         Dictionary of prevention measures. Needs to include the fields 
         employee_mask and resident_mask. 
-    simulation_params: dictionary
+    simulation_params : dictionary
         Dictionary of (epidemiological) simulation parameters. Needs to include
         the fields employee_index_probability and resident_index_probability.
+    e_screen_interval : integer
+        Interval (in days) of the preventive testing screens in the employee
+        agent group. Can be [2, 3, 7, None].
+    r_screen_interval : integer
+        Interval (in days) of the preventive testing screens in the resident
+        agent group. Can be [2, 3, 7, None].
+    e_vaccination_ratio : float
+        Ratio of vaccinated employees.
+    r_vaccination_ratio : float
+        Ratio of vaccinated residents.
         
     Returns
     -------
@@ -32,38 +42,28 @@ def compose_agents(measures, simulation_params,
     agent_types = {
         'employee':{
             'screening_interval':e_screen_interval,
+            'vaccination_ratio': e_vaccination_ratio,
             'index_probability':simulation_params['employee_index_probability'],
             'mask':measures['employee_mask']},
 
         'resident':{
             'screening_interval':r_screen_interval,
+            'vaccination_ratio': r_vaccination_ratio,
             'index_probability':simulation_params['resident_index_probability'],
             'mask':measures['resident_mask']},
     }
     return agent_types
 
 
-def run_model(test_type, index_case, e_screen_interval, r_screen_interval, 
-              measures, simulation_params, contact_network_src,
-              N_steps=500):
+def run_model(measures, simulation_params, contact_network_src, test_type,
+              index_case, e_screen_interval, r_screen_interval,
+              e_vaccination_ratio, r_vaccination_ratio, N_steps=500):
     '''
     Runs a simulation with an SEIRX_nursing_home model 
     (see https://pypi.org/project/scseirx/1.3.0/), given a set of parameters.
     
     Parameters:
     -----------
-    test_type : string
-        Test technology used in the preventive screening. Available test
-        technologies are listed in the module testing_strategy.py
-    index_case : string
-        Agent group from which the index case is drawn. Can be "employee" or
-        "resident".
-    e_screen_interval : integer
-        Interval (in days) of the preventive testing screens in the employee
-        agent group. Can be [2, 3, 7, None].
-    r_screen_interval : integer
-        Interval (in days) of the preventive testing screens in the resident
-        agent group. Can be [2, 3, 7, None].
     measures : dictionary
         Dictionary listing all prevention measures in place for the given
         scenario. Fields that are not specifically included in this dictionary
@@ -76,6 +76,22 @@ def run_model(test_type, index_case, e_screen_interval, r_screen_interval,
         Absolute or relative path pointing to the location of the contact
         network used for the simulation. Networks need to be saved in networkx's
         .bz2 format.
+    test_type : string
+        Test technology used in the preventive screening. Available test
+        technologies are listed in the module testing_strategy.py
+    index_case : string
+        Agent group from which the index case is drawn. Can be "employee" or
+        "resident".
+    e_screen_interval : integer
+        Interval (in days) of the preventive testing screens in the employee
+        agent group. Can be [2, 3, 7, None].
+    r_screen_interval : integer
+        Interval (in days) of the preventive testing screens in the resident
+        agent group. Can be [2, 3, 7, None].
+    e_vaccination_ratio : float
+        Ratio of vaccinated employees.
+    r_vaccination_ratio : float
+        Ratio of vaccinated residents.
     N_steps : integer
         Number of maximum steps per run. This is a very conservatively chosen 
         value that ensures that an outbreak will always terminate within the 
@@ -88,7 +104,8 @@ def run_model(test_type, index_case, e_screen_interval, r_screen_interval,
         and all associated data.
     '''
     agent_types = compose_agents(measures, simulation_params,
-                                 e_screen_interval, r_screen_interval)
+                                 e_screen_interval, r_screen_interval,
+                                 e_vaccination_ratio, r_vaccination_ratio)
 
     # load the contact graph for a single living unit in a nursing home
     G = nx.readwrite.gpickle.read_gpickle(\
@@ -131,9 +148,10 @@ def run_model(test_type, index_case, e_screen_interval, r_screen_interval,
         
     return model
 
-def run_ensemble(N_runs, test_type, index_case, e_screen_interval, 
-                 r_screen_interval, measures, simulation_params, 
-                 contact_network_src, ensmbl_dst):
+def run_ensemble(N_runs, measures, simulation_params, contact_network_src,
+                 ensmbl_dst, test_type=None, index_case='employee',
+                 e_screen_interval=None, r_screen_interval=None,
+                 e_vaccination_ratio=0, r_vaccination_ratio=0):
     '''
     Utility function to run an ensemble of simulations for a given parameter 
     combination.
@@ -142,18 +160,6 @@ def run_ensemble(N_runs, test_type, index_case, e_screen_interval,
     ----------
     N_runs : integer
         Number of individual simulation runs in the ensemble.
-    test_type : string
-        Test technology used in the preventive screening. Available test
-        technologies are listed in the module testing_strategy.py
-    index_case : string
-        Agent group from which the index case is drawn. Can be "employee" or
-        "resident".
-    e_screen_interval : integer
-        Interval (in days) of the preventive testing screens in the employee
-        agent group. Can be [2, 3, 7, None].
-    r_screen_interval : integer
-        Interval (in days) of the preventive testing screens in the resident
-        agent group. Can be [2, 3, 7, None].
     measures : dictionary
         Dictionary listing all prevention measures in place for the given
         scenario. Fields that are not specifically included in this dictionary
@@ -166,6 +172,22 @@ def run_ensemble(N_runs, test_type, index_case, e_screen_interval,
         Absolute or relative path pointing to the location of the contact
         network used for the simulation. Networks need to be saved in networkx's
         .bz2 format.
+    test_type : string
+        Test technology used in the preventive screening. Available test
+        technologies are listed in the module testing_strategy.py
+    index_case : string
+        Agent group from which the index case is drawn. Can be "employee" or
+        "resident".
+    e_screen_interval : integer
+        Interval (in days) of the preventive testing screens in the employee
+        agent group. Can be [2, 3, 7, None].
+    r_screen_interval : integer
+        Interval (in days) of the preventive testing screens in the resident
+        agent group. Can be [2, 3, 7, None].
+    e_vaccination_ratio : float
+        Ratio of vaccinated employees.
+    r_vaccination_ratio : float
+        Ratio of vaccinated residents.
         
     Returns:
     --------
@@ -177,9 +199,9 @@ def run_ensemble(N_runs, test_type, index_case, e_screen_interval,
     ensemble_results = pd.DataFrame()
     ensemble_runs = pd.DataFrame()
     for run in range(1, N_runs + 1):
-        model = run_model(test_type, index_case, e_screen_interval,
-                          r_screen_interval, measures, simulation_params,
-                          contact_network_src,)
+        model = run_model(measures, simulation_params, contact_network_src,
+                   test_type, index_case, e_screen_interval, r_screen_interval,
+                   e_vaccination_ratio, r_vaccination_ratio)
         
         # collect the statistics of the single run
         R0, _ = af.calculate_finite_size_R0(model)
@@ -234,8 +256,9 @@ def run_ensemble(N_runs, test_type, index_case, e_screen_interval,
     return ensemble_results
 
 
-def evaluate_ensemble(ensemble_results, test_type, index_case, e_screen_interval, 
-                      r_screen_interval):
+def evaluate_ensemble(ensemble_results, index_case, test_type=None, 
+                      e_screen_interval=None, r_screen_interval=None,
+                      e_vaccination_ratio=0, r_vaccination_ratio=0):
     '''
     Utility function to calculate ensemble statistics.
     
@@ -264,6 +287,11 @@ def evaluate_ensemble(ensemble_results, test_type, index_case, e_screen_interval
     r_screen_interval : integer
         Interval (in days) of the preventive testing screens in the resident
         agent group. Can be [2, 3, 7, None].
+    e_vaccination_ratio : float
+        Ratio of vaccinated employees.
+    r_vaccination_ratio : float
+        Ratio of vaccinated residents.
+        
         
     Returns:
     --------
@@ -276,7 +304,9 @@ def evaluate_ensemble(ensemble_results, test_type, index_case, e_screen_interval
     row = {'test_type':test_type,
            'index_case':index_case,
            'resident_screen_interval':r_screen_interval,
-           'employee_screen_interval':e_screen_interval}
+           'employee_screen_interval':e_screen_interval,
+           'e_vaccination_ratio':e_vaccination_ratio,
+           'r_vaccination_ratio':r_vaccination_ratio}
     
     for col in ['R0', 'infected_residents', 'infected_employees', 
                 'N_resident_screens_reactive', 'N_employee_screens_reactive',
