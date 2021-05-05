@@ -1,3 +1,6 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
 def plot_errors(ax, results, best_weight, xmin=0.1):
     '''
     Helper function to plot the individual (employee, resident) and total error 
@@ -126,3 +129,39 @@ def plot_emp_sim_data(ax, emp_data, agg, comp_period):
     
     ax.set_xlabel('days', fontsize=16)
     ax.set_ylabel('N infected', fontsize=16)
+    
+    
+def get_image(df, subset, screening_params, metric):
+    subset = df.loc[subset]
+    img = np.zeros((len(screening_params), len(screening_params)))
+    for i, p_index in enumerate(screening_params):
+        for j, e_index in enumerate(screening_params):
+            img[i, j] = subset.loc[e_index, p_index][metric]
+    return img
+
+def plot_heatmap(ax, img, screening_params, vmin, vmax, xticks, yticks,
+                 xlabel, ylabel):
+    cmap = plt.get_cmap('coolwarm')
+    im = ax.imshow(img, origin='lower', vmin=vmin, vmax=vmax, cmap=cmap)
+    
+    if xticks:
+        ax.set_xticks(range(len(screening_params)))
+        ax.set_xticklabels(screening_params, fontsize=9)
+        ax.set_xlabel(xlabel, fontsize=12)
+    else:
+        ax.set_xticks([])
+    if yticks:    
+        ax.set_yticks(range(len(screening_params)))
+        ax.set_yticklabels(screening_params, fontsize=9)
+        ax.set_ylabel(ylabel, fontsize=12)
+    else:
+        ax.set_yticks([])
+    
+    return im
+
+def annotate_heatmap(ax, img):
+    for i in range(img.shape[0]):
+        for j in range(img.shape[1]):
+            y_pos = i - 0.05
+            x_pos = j - 0.15
+            ax.text(x_pos, y_pos, '{:1.2f}'.format(img[i, j]))
