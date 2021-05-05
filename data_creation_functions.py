@@ -249,9 +249,10 @@ def run_ensemble(N_runs, measures, simulation_params, contact_network_src,
                 ignore_index=True)
         
     ensemble_runs = ensemble_runs.reset_index(drop=True)
-    ensemble_runs.to_csv(join(ensmbl_dst, 'test-{}_index-{}_esi-{}_rsi-{}.csv'\
-        .format(test_type, index_case, e_screen_interval, r_screen_interval)),
-                         index=False)
+    ensemble_runs.to_csv(join(ensmbl_dst,
+            'test-{}_index-{}_esi-{}_rsi-{}_evr-{}_rvr-{}.csv'\
+        .format(test_type, index_case, e_screen_interval, r_screen_interval,
+                e_vaccination_ratio, r_vaccination_ratio)), index=False)
         
     return ensemble_results
 
