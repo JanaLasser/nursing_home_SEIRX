@@ -305,8 +305,8 @@ def evaluate_ensemble(ensemble_results, index_case, test_type=None,
            'index_case':index_case,
            'resident_screen_interval':r_screen_interval,
            'employee_screen_interval':e_screen_interval,
-           'e_vaccination_ratio':e_vaccination_ratio,
-           'r_vaccination_ratio':r_vaccination_ratio}
+           'employee_vaccination_ratio':e_vaccination_ratio,
+           'resident_vaccination_ratio':r_vaccination_ratio}
     
     for col in ['R0', 'infected_residents', 'infected_employees', 
                 'N_resident_screens_reactive', 'N_employee_screens_reactive',
