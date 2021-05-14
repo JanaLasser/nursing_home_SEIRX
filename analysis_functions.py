@@ -186,6 +186,8 @@ def load_ensmbl(p, test_name_map, ensmbl_dst, variant='wild_type'):
     
     ensmbl = pd.read_csv(join(ensmbl_dst, ensmbl_file))
     ensmbl['vaccination_scenario'] = vacc_scen_label
+    ensmbl['employee_vaccination_ratio'] = e_vacc_ratio
+    ensmbl['resident_vaccination_ratio'] = r_vacc_ratio
     ensmbl['testing_scenario'] = testing_strat_label + '\n' + \
         test_name_map[test_type]
     ensmbl['index_case'] = index_case
@@ -275,9 +277,19 @@ def get_testing_scenario_data(df, testing_scenario):
         .drop(columns=['run'])
     agg.loc[agg['index_case'] == 'resident', 'infected_residents'] -= 1
 
-    #agg['vaccination_scenario'] = pd.Categorical(agg['vaccination_scenario'], 
-    #    categories=vacc_scenario_labels, ordered=True)
+    return agg
 
+def get_vaccination_ratio_data(df, vacc_ratio, agent_group='employee'):
+    df = df.copy()
+    vacc_ratio_col = '{}_vaccination_ratio'.format(agent_group)
+    tmp = df[df[vacc_ratio_col] == vacc_ratio]
+    agg = tmp[['run', vacc_ratio_col, 'index_case', 'infected_residents']]\
+        .groupby(['run', vacc_ratio_col, 'index_case'])\
+        .agg('max')\
+        .reset_index()\
+        .drop(columns=['run'])
+
+    agg.loc[agg['index_case'] == 'resident', 'infected_residents'] -= 1
     return agg
 
 
