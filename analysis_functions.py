@@ -173,12 +173,12 @@ def annotate_heatmap(ax, img):
             ax.text(x_pos, y_pos, '{:1.2f}'.format(img[i, j]))
             
             
-def load_ensmbl(p, test_name_map, variant='wild_type'):
+def load_ensmbl(p, test_name_map, ensmbl_dst, variant='wild_type'):
     test_type, index_case,\
     e_screen_interval, r_screen_interval, testing_strat_label, \
     e_vacc_ratio, r_vacc_ratio, vacc_scen_label = p
     
-    ensmbl_dst = '../data/simulation_results/ensembles/testing_and_vaccination/{}'.format(variant)
+    ensmbl_dst = join(ensmbl_dst, variant)
     ensmbl_name = 'test-{}_index-{}_esi-{}_rsi-{}_evr-{}_rvr-{}.csv'
 
     ensmbl_file = ensmbl_name.format(test_type, index_case, e_screen_interval,
@@ -195,15 +195,15 @@ def load_ensmbl(p, test_name_map, variant='wild_type'):
     return ensmbl
 
 
-def load_baseline_ensmbl(p, test_name_map, variant='wild_type'):
+def load_baseline_ensmbl(p, test_name_map, baseline_ensmbl_dst, variant='wild_type'):
     test_type, index_case, e_screen_interval, r_screen_interval,\
         testing_strat_label, vacc_strat_label = p
     
     e_vacc_ratio = 0
     r_vacc_ratio = 0
     
-    baseline_ensmbl_dst = '../data/simulation_results/ensembles/testing_strategy/{}'\
-        .format(variant)
+    baseline_ensmbl_dst = join(baseline_ensmbl_dst, variant)
+
     try:
         ensmbl_name = 'test-{}_index-{}_esi-{}_rsi-{}.csv'
         ensmbl_file = ensmbl_name.format(test_type, index_case, e_screen_interval,
@@ -227,17 +227,16 @@ def load_baseline_ensmbl(p, test_name_map, variant='wild_type'):
     return ensmbl
 
 
-def load_no_test_ensmbl(p, test_name_map, variant='wild_type'):
+def load_no_test_ensmbl(p, test_name_map, no_test_ensmbl_dst, variant='wild_type'):
     test_type, index_case, e_screen_interval, r_screen_interval,\
         testing_strat_label, e_vacc_ratio, r_vacc_ratio, vacc_strat_label = p
     
-    baseline_ensmbl_dst = '../data/simulation_results/ensembles/vaccination/{}'\
-        .format(variant)
+    no_test_ensmbl_dst = join(no_test_ensmbl_dst, variant)
 
     ensmbl_name = 'test-{}_index-{}_esi-{}_rsi-{}_evr-{}_rvr-{}.csv'
     ensmbl_file = ensmbl_name.format(test_type, index_case, e_screen_interval,
                 r_screen_interval, e_vacc_ratio, r_vacc_ratio)
-    ensmbl = pd.read_csv(join(baseline_ensmbl_dst, ensmbl_file))
+    ensmbl = pd.read_csv(join(no_test_ensmbl_dst, ensmbl_file))
     
     ensmbl['vaccination_scenario'] = vacc_strat_label
     ensmbl['testing_scenario'] = testing_strat_label + '\n' + \
@@ -248,17 +247,16 @@ def load_no_test_ensmbl(p, test_name_map, variant='wild_type'):
     return ensmbl
 
 
-def load_TTI_ensmbl(p, variant='wild_type'):
+def load_TTI_ensmbl(p, TTI_ensmbl_dst, variant='wild_type'):
     test_type, index_case, e_screen_interval, r_screen_interval,\
         testing_strat_label, e_vacc_ratio, r_vacc_ratio, vacc_strat_label = p
     
-    baseline_ensmbl_dst = '../data/simulation_results/ensembles/TTI/{}'\
-        .format(variant)
+    TTI_ensmbl_dst = join(TTI_ensmbl_dst, variant)
     
     ensmbl_name = 'test-{}_index-{}_esi-{}_rsi-{}_evr-{}_rvr-{}.csv'
     ensmbl_file = ensmbl_name.format(test_type, index_case, e_screen_interval,
                 r_screen_interval, e_vacc_ratio, r_vacc_ratio)
-    ensmbl = pd.read_csv(join(baseline_ensmbl_dst, ensmbl_file))
+    ensmbl = pd.read_csv(join(TTI_ensmbl_dst, ensmbl_file))
     
     ensmbl['vaccination_scenario'] = vacc_strat_label
     ensmbl['testing_scenario'] = testing_strat_label + '\n'
