@@ -7,6 +7,109 @@ import seaborn as sns
 import matplotlib as mpl
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
+# Since these plots were also used to advise Austrian decision makers, we 
+# provide plot label mappings to German for easier communication of results.
+label_map = {
+    'english':{
+        'metric_name_map':{
+            'infected_residents_mean':'follow-up cases residents (mean)',
+            'infected_residents_median':'follow-up cases residends (median)',
+            'infected_residents_0.90':'follow-up cases residents (90th percentile)',
+            'infected_residents':'follow-up cases residents',
+            'R0_mean':'$R_0$',
+            'R0_mean':'$R_0$'},
+
+        'index_case_map':{
+            'employee':'index case employee',
+            'resident':'index case resident'},
+        
+        'frequency_name_map':{
+            np.nan:'never',
+            2:'3 times\na week',
+            3:'twice\na week',
+            7:'once\na week'},
+    
+        'test_name_map':{
+            'same_day_antigen':'same-day antigen',
+            'one_day_PCR':'one day PCR',
+            'two_day_PCR':'two days PCR',
+            'same_day_PCR':'same-day PCR',
+            'same_day_LAMP':'same-day RT-LAMP',
+            None:''},
+        
+        'index_case_label':'index case',
+        'employee_label':'employee',
+        'resident_label':'resident',
+        
+        'xlabels':{
+            'vaccination':'vaccinated employees',
+            'testing_and_vaccination':'screening frequency employees',
+            'testing_strategy':'screening frequency employees'},
+        
+        'ylabels':{
+            'vaccination':'vaccinated residents',
+            'testing_and_vaccination':'screening frequency residents',
+            'testing_strategy':'screening frequency residents'},
+    },
+    'german':{
+        'metric_name_map':{
+            'infected_residents_mean':'Folgefälle BewohnerInnen (Mittelwert)',
+            'infected_residents_median':'Folgefälle BewohnerInnen (Median)',
+            'infected_residents_0.90':'Folgefälle BewohnerInnen (90. Percentile)',
+            'infected_residents':'Folgefälle BewohnerInnen',
+            'R0_mean':'$R_0$',
+            'R0_mean':'$R_0$'},
+
+        'index_case_map':{
+            'employee':'kein Besuch (Indexfall MitarbeiterIn)',
+            'resident':'Besuch (Indexfall BewohnerIn)'},
+        
+        'frequency_name_map':{
+            np.nan:'nie',
+            2:'3 mal\npro Woche',
+            3:'2 mal\npro Woche',
+            7:'ein mal\npro Woche'},
+    
+        'test_name_map':{
+            'same_day_antigen':'Antigen (selber Tag)',
+            'one_day_PCR':'PCR (1 Tag)',
+            'two_day_PCR':'PCR (2 Tage)',
+            'same_day_PCR':'PCR (selber Tag)',
+            'same_day_LAMP':'RT-LAMP (selber Tag)',
+            None:''},
+        
+        'index_case_label':'Indexfall',
+        'employee_label':'MitarbeiterIn',
+        'resident_label':'BewohnerIn',
+        
+        'xlabels':{
+            'vaccination':'geimpfte MitarbeiterInnen',
+            'testing_and_vaccination':'Testfrequenz MitarbeiterInnen',
+            'testing_strategy':'Testfrequenz MitarbeiterInnen'},
+        
+        'ylabels':{
+            'vaccination':'geimpfte BewohnerInnen',
+            'testing_and_vaccination':'Testfrequenz BewohnerInnen',
+            'testing_strategy':'Testfrequenz BewohnerInnen'},
+    }
+}
+
+def round_decimals_up(number:float, decimals:int=2):
+    """
+    Returns a value rounded up to a specific number of decimal places.
+    """
+    import math
+    if not isinstance(decimals, int):
+        raise TypeError("decimal places must be an integer")
+    elif decimals < 0:
+        raise ValueError("decimal places has to be 0 or more")
+    elif decimals == 0:
+        return math.ceil(number)
+
+    factor = 10 ** decimals
+    return math.ceil(number * factor) / factor
+
+
 def plot_errors(ax, results, best_weight, xmin=0.1):
     '''
     Helper function to plot the individual (employee, resident) and total error 
@@ -146,7 +249,7 @@ def get_image(df, subset, screening_params, metric):
     return img
 
 def plot_heatmap(ax, img, screening_params, vmin, vmax, xticks, yticks,
-                 xlabel, ylabel, ticklabel_fontsize=9):
+                  xlabel, ylabel, ticklabel_fontsize=9):
     cmap = plt.get_cmap('coolwarm')
     im = ax.imshow(img, origin='lower', vmin=vmin, vmax=vmax, cmap=cmap)
     
@@ -294,9 +397,14 @@ def get_vaccination_ratio_data(df, vacc_ratio, agent_group='employee'):
 
 
 def plot_testing_strategy_vaccination_scenario_grid(data, metric,
-        screening_params, vacc_scenarios, test_name_map, index_case_map,
-        vacc_scenario_labels, metric_name_map, xlabel, ylabel, language,
-        variant='', vmax=10, vmin=0, vstep=2):
+        screening_params, vacc_scenarios, vacc_scenario_labels,
+        language, variant='', vmax=10, vmin=0, vstep=2):
+    
+    test_name_map = label_map[language]['test_name_map']
+    index_case_map = label_map[language]['index_case_map']
+    metric_name_map = label_map[language]['metric_name_map']
+    xlabel = label_map[language]['xlabels']['testing_and_vaccination']
+    ylabel = label_map[language]['ylabels']['testing_and_vaccination']
     
     # figure layout & axis setup
     fig = plt.figure(figsize=(15, 20))
@@ -423,8 +531,14 @@ def plot_testing_strategy_vaccination_scenario_grid(data, metric,
     
     
 def plot_violins(data, metric, testing_scenarios, vaccination_scenarios,
-                 metric_name_map, index_case_map, index_case_label, language, 
-                 employee_label, resident_label, variant='', ymin=-3, ymax=20):
+                 language, variant='', ymin=-3, ymax=20):
+    
+    metric_name_map = label_map[language]['metric_name_map']
+    index_case_map = label_map[language]['index_case_map']
+    index_case_label = label_map[language]['index_case_label']
+    employee_label = label_map[language]['employee_label']
+    resident_label = label_map[language]['resident_label']
+    
     fig = plt.figure(figsize=(10, 7.5))
     gs = gridspec.GridSpec(2, 2)
     gs.update(wspace=0.1, hspace=0.4)
@@ -474,8 +588,11 @@ def plot_violins(data, metric, testing_scenarios, vaccination_scenarios,
     
     
 def plot_violins2(data, metric, testing_scenarios, vaccination_scenarios,
-                 metric_name_map, index_case_map, language,
-                 variant='', ymin=-3, ymax=20):
+                  language, variant='', ymin=-3, ymax=20):
+    
+    metric_name_map = label_map[language]['metric_name_map']
+    index_case_map = label_map[language]['index_case_map']
+    
     fig = plt.figure(figsize=(15, 4))
     gs = gridspec.GridSpec(1, 3)
     gs.update(wspace=0.1, hspace=0.4)
@@ -522,3 +639,80 @@ def plot_violins2(data, metric, testing_scenarios, vaccination_scenarios,
                 .format(variant, language[0:3]), transparent=True)
     plt.savefig('../plots/vaccination_scenario_violins2{}_{}.png'\
                 .format(variant, language[0:3]), dpi=300)
+    
+    
+def plot_vaccination_heatmap(data, metric, vaccination_ratios, language, 
+                             variant=''):
+
+    metric_name_map = label_map[language]['metric_name_map']
+    index_case_map = label_map[language]['index_case_map']
+    xlabel = label_map[language]['xlabels']['vaccination']
+    ylabel = label_map[language]['ylabels']['vaccination']
+    
+    # figure layout & axis setup
+    fig, axes = plt.subplots(1, 2, figsize=(15, 9))
+
+    vmin=0
+    vmax=10
+    vstep=1
+
+    # compare scenarios in which either employees or residents are the
+    # index case
+    for i, index_case_mode, ax in zip([0, 1], ['employee', 'resident'], axes):
+
+        ax.set_title(index_case_map[index_case_mode], fontsize=20)
+
+        # set flag to set axis ticks only for heatmaps at the boundaries of 
+        # the figure
+        xticks = True
+        yticks = False
+        if i == 0:
+            yticks = True
+
+        # plot heatmap of the scenario
+        img = get_image(data, index_case_mode, vaccination_ratios, metric)
+        if index_case_mode == 'resident':
+            # if a resident is the index case, we need to subtract 1 from the
+            # number of infected residents, to calculate the "outbreak size",
+            # which is defined as the number of FOLLOW-UP cases, given an index
+            # case
+            img = img - 1
+        img_plot = plot_heatmap(ax, img,
+                ['{:1.0f}%'.format(100*i) for i in vaccination_ratios],
+                vmin, vmax, xticks, yticks, xlabel, ylabel)
+
+        mask = np.where(img < 1, 1, 0)
+        for i in range(img.shape[0]):
+            for j in range(img.shape[1]):
+                if mask[i, j]:
+                    rect = plt.Rectangle((j-0.5, i-0.5), 1, 1, color='g',
+                                    alpha=1, fill=False, ec='#D6DBDF', lw=4)
+                    ax.add_patch(rect)
+
+        ax.xaxis.label.set_size(18)
+        ax.yaxis.label.set_size(20)
+
+    # colorbar
+    divider = make_axes_locatable(axes[1])
+    cbar_ax = divider.append_axes('right', size='4%', pad=0.1)
+
+    norm = mpl.colors.Normalize(vmin=vmin,vmax=vmax)
+    sm = plt.cm.ScalarMappable(cmap= plt.get_cmap('coolwarm'), norm=norm)
+    cbar = fig.colorbar(sm, cax=cbar_ax, orientation='vertical',\
+                            ticks=np.arange(vmin, vmax + 1, vstep))
+    yticklabels = list(range(vmin, vmax, vstep)) + ['$\geq {}$'.format(vmax)]
+    cbar.ax.set_yticklabels(yticklabels)
+    cbar.set_label('{}'.format(metric_name_map[metric]), fontsize=18)      
+
+    # dummy axis to preserve spacing
+    divider = make_axes_locatable(axes[0])
+    cbar_ax = divider.append_axes('right', size='4%', pad=0.0)
+    cbar_ax.set_axis_off()
+
+    fig.text(0.07, 0.8525, 'A', fontweight='bold', fontsize=22)
+    fig.text(0.512, 0.8525, 'B', fontweight='bold', fontsize=22)
+
+    plt.tight_layout()
+
+    plt.savefig('../plots/vaccinations{}_{}.pdf'.format(variant, language[0:3]))
+    plt.savefig('../plots/vaccinations{}_{}.png'.format(variant, language[0:3]))
