@@ -3,7 +3,9 @@ This repository includes code to run agent based simulations for the spread of a
 **Note**: before running any code in this repository, you will have to download the corresponding "data" and "plots" foder from the [OSF-repository](https://osf.io/hyd4r/) belonging to this project and move them to this repository.
 
 ## Reference
-To reference this work, please cite this [preprint](https://osf.io/5xdqe/). 
+To reference this work, please cite this [preprint](https://arxiv.org/abs/2104.00550) as
+
+Lasser, J., Zuber, J., Sorger, J., Dervic, E., Ledebur, K., Lindner, S.D., Klager, E., Kletečka-Pulker, M., Willschke, H., Stangl, K., Stadtmann, S., Haslingder, C., Klimek, P., Wochele-Thoma, T. (2020). _Agent-based simulations for protecting nursing homes with prevention and vaccination strategies_. arXiv preprint **arXiv:2104.00550**.
 
 ## Data
 Whenever folders are referenced in the following description, they are located in the [OSF-repository](https://osf.io/hyd4r/) belonging to this project. Exceptions to that rule are indicated accordingly.
