@@ -57,7 +57,7 @@ def compose_agents(measures, simulation_params, e_screen_interval,
 
 def run_model(measures, simulation_params, contact_network_src, test_type,
               index_case, e_screen_interval, r_screen_interval,
-              e_vaccination_ratio, r_vaccination_ratio, N_steps=500):
+              e_vaccination_ratio, r_vaccination_ratio, N_steps=500, run=True):
     '''
     Runs a simulation with an SEIRX_nursing_home model 
     (see https://pypi.org/project/scseirx/1.3.0/), given a set of parameters.
@@ -97,6 +97,10 @@ def run_model(measures, simulation_params, contact_network_src, test_type,
         value that ensures that an outbreak will always terminate within the 
         allotted time. Most runs are terminated way earlier anyways, as soon as 
         the outbreak is over.
+    run : bool
+        If run == False, the model will be initialised but not run. This serves
+        for debugging purposes and to check the statistics of the freshly 
+        instantiated model.
         
     Returns
     -------
@@ -133,18 +137,19 @@ def run_model(measures, simulation_params, contact_network_src, test_type,
       agent_types = agent_types, 
       age_transmission_risk_discount = \
                 simulation_params['age_transmission_discount'],
-      age_symptom_discount = simulation_params['age_symptom_discount'],
+      age_symptom_modification = simulation_params['age_symptom_modification'],
       mask_filter_efficiency = measures['mask_filter_efficiency'],
       transmission_risk_ventilation_modifier = \
                 measures['transmission_risk_ventilation_modifier'],)
 
-    # run the model until the outbreak is over
-    for i in range(N_steps):
-        # break if first outbreak is over
-        if len([a for a in model.schedule.agents if \
-            (a.exposed == True or a.infectious == True)]) == 0:
-            break
-        model.step()
+    if run:
+        # run the model until the outbreak is over
+        for i in range(N_steps):
+            # break if first outbreak is over
+            if len([a for a in model.schedule.agents if \
+                (a.exposed == True or a.infectious == True)]) == 0:
+                break
+            model.step()
         
     return model
 
