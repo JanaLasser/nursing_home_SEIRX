@@ -112,7 +112,7 @@ def run_model(contact_weight, measures, simulation_params, contact_network_src,
       agent_types = agent_types, 
       age_transmission_risk_discount = \
                 simulation_params['age_transmission_discount'],
-      age_symptom_discount = simulation_params['age_symptom_discount'],
+      age_symptom_modification = simulation_params['age_symptom_modification'],
       mask_filter_efficiency = measures['mask_filter_efficiency'],
       transmission_risk_ventilation_modifier = \
                 measures['transmission_risk_ventilation_modifier'],)
