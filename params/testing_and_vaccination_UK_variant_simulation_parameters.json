@@ -1,1 +1,13 @@
-{"verbosity": 0, "base_transmission_risk": 0.11061177660748771, "subclinical_modifier": 0.6, "exposure_duration": [5.0, 1.9], "time_until_symptoms": [6.4, 0.8], "infection_duration": [10.91, 3.95], "infection_risk_contact_type_weights": {"very_far": 0, "far": 0.16, "intermediate": 0.16, "close": 1},    "employee_index_probability": 0, "resident_index_probability": 0, "age_transmission_discount": {"slope":0, "intercept": 1}, "age_symptom_discount": {"slope":0, "intercept":1}}
+{
+	"verbosity": 0,
+	"base_transmission_risk": 0.107348,
+	"subclinical_modifier": 0.6,
+	"exposure_duration": [5.0, 1.9],
+	"time_until_symptoms": [6.4, 0.8],
+	"infection_duration": [10.91, 3.95],
+	"infection_risk_contact_type_weights": {"very_far": 0, "far": 0.14, "intermediate": 0.14, "close": 1},
+	"employee_index_probability": 0,
+	"resident_index_probability": 0,
+	"age_transmission_discount": {"slope":0, "intercept": 1},
+	"age_symptom_modification": {"slope":0.009515, "intercept":-0.116000}
+}
