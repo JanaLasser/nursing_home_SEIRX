@@ -651,6 +651,8 @@ def plot_vaccination_heatmap(data, metric, vaccination_ratios, language,
     index_case_map = label_map[language]['index_case_map']
     xlabel = label_map[language]['xlabels']['vaccination']
     ylabel = label_map[language]['ylabels']['vaccination']
+
+    cmap = plt.get_cmap('YlOrRd')
     
     # figure layout & axis setup
     fig, axes = plt.subplots(1, 2, figsize=(15, 9))
@@ -682,7 +684,7 @@ def plot_vaccination_heatmap(data, metric, vaccination_ratios, language,
             img = img - 1
         img_plot = plot_heatmap(ax, img,
                 ['{:1.0f}%'.format(100*i) for i in vaccination_ratios],
-                vmin, vmax, xticks, yticks, xlabel, ylabel)
+                vmin, vmax, xticks, yticks, xlabel, ylabel, cmap=cmap)
 
         mask = np.where(img < 1, 1, 0)
         for i in range(img.shape[0]):
@@ -700,7 +702,7 @@ def plot_vaccination_heatmap(data, metric, vaccination_ratios, language,
     cbar_ax = divider.append_axes('right', size='4%', pad=0.1)
 
     norm = mpl.colors.Normalize(vmin=vmin,vmax=vmax)
-    sm = plt.cm.ScalarMappable(cmap= plt.get_cmap('coolwarm'), norm=norm)
+    sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
     cbar = fig.colorbar(sm, cax=cbar_ax, orientation='vertical',\
                             ticks=np.arange(vmin, vmax + 1, vstep))
     yticklabels = list(range(vmin, vmax, vstep)) + ['$\geq {}$'.format(vmax)]
