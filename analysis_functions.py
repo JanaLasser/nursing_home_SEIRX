@@ -16,8 +16,9 @@ label_map = {
             'infected_residents_median':'follow-up cases residends (median)',
             'infected_residents_0.90':'follow-up cases residents (90th percentile)',
             'infected_residents':'follow-up cases residents',
-            'R0_mean':'$R_0$',
-            'R0_mean':'$R_0$'},
+            'R0_mean':'$R_\\mathrm{eff}$',
+            'R0_mean':'$R_\\mathrm{eff}$',
+            'test_rate_mean':'tests / day / agent (mean)'},
 
         'index_case_map':{
             'employee':'index case employee',
@@ -57,8 +58,9 @@ label_map = {
             'infected_residents_median':'Folgefälle BewohnerInnen (Median)',
             'infected_residents_0.90':'Folgefälle BewohnerInnen (90. Percentile)',
             'infected_residents':'Folgefälle BewohnerInnen',
-            'R0_mean':'$R_0$',
-            'R0_mean':'$R_0$'},
+            'R0_mean':'$R_\\mathrm{eff}$',
+            'R0_mean':'$R_\\mathrm{eff}$',
+            'test_rate_mean':'Tests / Tag / Agent (Mittelwert)'},
 
         'index_case_map':{
             'employee':'kein Besuch (Indexfall MitarbeiterIn)',
@@ -249,8 +251,9 @@ def get_image(df, subset, screening_params, metric):
     return img
 
 def plot_heatmap(ax, img, screening_params, vmin, vmax, xticks, yticks,
-                  xlabel, ylabel, ticklabel_fontsize=9):
-    cmap = plt.get_cmap('coolwarm')
+                  xlabel, ylabel, ticklabel_fontsize=9, 
+                 cmap=plt.get_cmap('coolwarm')):
+
     im = ax.imshow(img, origin='lower', vmin=vmin, vmax=vmax, cmap=cmap)
     
     if xticks:
@@ -716,3 +719,93 @@ def plot_vaccination_heatmap(data, metric, vaccination_ratios, language,
 
     plt.savefig('../plots/vaccinations{}_{}.pdf'.format(variant, language[0:3]))
     plt.savefig('../plots/vaccinations{}_{}.png'.format(variant, language[0:3]))
+
+
+def plot_testing_strategy_heatmaps(data, metric, test_types, sim_name, 
+    screening_params, cmap, vmin, vmax, vstep, language, variant,
+    plt_dst, fname_addition=''):
+    
+    index_case_map = label_map[language]['index_case_map']
+    test_name_map = label_map[language]['test_name_map']
+    xlabel = label_map[language]['xlabels']['testing_strategy']
+    ylabel = label_map[language]['ylabels']['testing_strategy']
+    metric_name_map = label_map[language]['metric_name_map']
+    frequency_name_map = label_map[language]['frequency_name_map']
+
+    # figure layout & axis setup
+    fig = plt.figure(figsize=(15, 12))
+    gs = fig.add_gridspec(nrows=4, ncols=4, width_ratios=[1,1,1, 0.05],\
+                           height_ratios=[0.1,1,0.1,1], wspace=0.05, hspace=0)
+
+    title_ax_1 = fig.add_subplot(gs[0, 0:])
+    hmap_ax_1 = fig.add_subplot(gs[1, 0])
+    hmap_ax_2 = fig.add_subplot(gs[1, 1])
+    hmap_ax_3 = fig.add_subplot(gs[1, 2])
+
+    title_ax_2 = fig.add_subplot(gs[2, 0:])
+    hmap_ax_4 = fig.add_subplot(gs[3, 0])
+    hmap_ax_5 = fig.add_subplot(gs[3, 1])
+    hmap_ax_6 = fig.add_subplot(gs[3, 2])
+
+    cbar_ax = fig.add_subplot(gs[1:, 3])
+
+    hmap_axes = [[hmap_ax_1, hmap_ax_2, hmap_ax_3], [hmap_ax_4, hmap_ax_5, hmap_ax_6]]
+    title_axes = [title_ax_1, title_ax_2]
+
+    # compare scenarios in which either employees or residents are the index case
+    for i, index_case_mode in enumerate(['employee', 'resident']):
+        df = data.loc[:,:,:, index_case_mode]
+        
+        # set flag to set axis ticks only for heatmaps at the boundaries of 
+        # the figure
+        t_ax = title_axes[i]
+        t_ax.set_xticks([])
+        t_ax.set_yticks([])
+        t_ax.set_frame_on(False)
+        t_ax.set_xlim(0, 1)
+        t_ax.set_ylim(0, 3)
+        t_ax.text(0.38, 1, index_case_map[index_case_mode], fontsize=20)
+        
+        # compare different test result turnover times for PCR tests
+        for j, ax, test_type in zip(range(3), hmap_axes[i], test_types):
+            xticks = False
+            yticks = False
+            if i > 0:
+                xticks = True
+            if j in [0, 3]:
+                yticks = True
+                
+            # put the turnover time in the heatmap title
+            ax.set_title('Test: {}'\
+                    .format(test_name_map[test_type]), fontsize=14)
+            
+            # plot heatmap of the scenario
+            img = get_image(df, test_type, screening_params, metric)
+            if index_case_mode == 'resident' and metric in \
+                ['infected_residents_mean', 'infected_residents_median',
+                 'infected_residents_0.90', 'infected_residents']:
+                img = img - 1
+            img_plot = plot_heatmap(ax, img, screening_params, vmin, vmax,
+                    xticks, yticks, xlabel, ylabel, cmap=cmap)
+            
+            # annotate heatmap with tests / days / agent
+            #test_rate = get_image(df, test_type, screening_params, 
+            #                            'test_rate_mean')
+            # annotate_heatmap(ax, test_rate)
+
+    # colorbar
+    norm = mpl.colors.Normalize(vmin=vmin,vmax=vmax)
+    sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
+    cbar = fig.colorbar(sm, cax=cbar_ax, orientation='vertical',\
+                    ticks=np.arange(vmin, vmax+vstep, vstep))
+    yticklabels = ['{:1.2f}'.format(i) for i in np.arange(vmin, vmax, vstep)] + \
+            ['$\geq {}$'.format(vmax)]
+    cbar.ax.set_yticklabels(yticklabels)
+    cbar.set_label('{}'.format(metric_name_map[metric]), fontsize=12)    
+
+    # saving of plots
+    plt.savefig(join(plt_dst, '{}{}{}_{}.png'\
+        .format(sim_name, variant, fname_addition, language[0:3])),
+                dpi=300, transparent=True)
+    plt.savefig(join(plt_dst,'{}{}{}_{}.pdf'\
+        .format(sim_name, variant, fname_addition, language[0:3])))
