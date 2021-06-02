@@ -408,6 +408,8 @@ def plot_testing_strategy_vaccination_scenario_grid(data, metric,
     metric_name_map = label_map[language]['metric_name_map']
     xlabel = label_map[language]['xlabels']['testing_and_vaccination']
     ylabel = label_map[language]['ylabels']['testing_and_vaccination']
+
+    cmap = plt.get_cmap('YlOrRd')
     
     # figure layout & axis setup
     fig = plt.figure(figsize=(15, 20))
@@ -465,7 +467,7 @@ def plot_testing_strategy_vaccination_scenario_grid(data, metric,
                   index_case_map[index_case_mode], fontsize=20)
 
         j = 0
-        for j, ax, vacc_scenario, vacc_scenario_label in zip(range(4), hmap_axes[i],
+        for j,ax,vacc_scenario,vacc_scenario_label in zip(range(4),hmap_axes[i],
                                     vacc_scenarios, vacc_scenario_labels):
 
             # set flag to set axis ticks only for heatmaps at the boundaries of 
@@ -490,7 +492,7 @@ def plot_testing_strategy_vaccination_scenario_grid(data, metric,
                 # case
                 img = img - 1
             img_plot = plot_heatmap(ax, img, screening_params, vmin, vmax, xticks,
-                                    yticks, xlabel, ylabel)
+                                    yticks, xlabel, ylabel, cmap=cmap)
 
             # annotate heatmap with tests / days / agent
             test_rate = get_image(df.loc[vacc_scenario[0]],
@@ -500,7 +502,7 @@ def plot_testing_strategy_vaccination_scenario_grid(data, metric,
 
     # colorbar
     norm = mpl.colors.Normalize(vmin=vmin,vmax=vmax)
-    sm = plt.cm.ScalarMappable(cmap= plt.get_cmap('coolwarm'), norm=norm)
+    sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
     cbar = fig.colorbar(sm, cax=cbar_ax, orientation='vertical',\
                             ticks=np.arange(vmin, vmax + 1, vstep))
     yticklabels = list(range(vmin, vmax, vstep)) + ['$\geq {}$'.format(vmax)]
