@@ -12,10 +12,10 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 label_map = {
     'english':{
         'metric_name_map':{
-            'infected_residents_mean':'follow-up cases residents (mean)',
-            'infected_residents_median':'follow-up cases residends (median)',
-            'infected_residents_0.90':'follow-up cases residents (90th percentile)',
-            'infected_residents':'follow-up cases residents',
+            'infected_residents_mean':'final outbreak size - 1 (mean)',
+            'infected_residents_median':'final outbreak size - 1 (median)',
+            'infected_residents_0.90':'final outbreak size - 1 (90th percentile)',
+            'infected_residents':'final outbreak size - 1',
             'R0_mean':'$R_\\mathrm{eff}$',
             'R0_mean':'$R_\\mathrm{eff}$',
             'test_rate_mean':'tests / day / agent (mean)'},
@@ -44,13 +44,13 @@ label_map = {
         
         'xlabels':{
             'vaccination':'vaccinated employees',
-            'testing_and_vaccination':'screening frequency employees',
-            'testing_strategy':'screening frequency employees'},
+            'testing_and_vaccination':'mitigation test frequency employees',
+            'testing_strategy':'mitigation test frequency employees'},
         
         'ylabels':{
             'vaccination':'vaccinated residents',
-            'testing_and_vaccination':'screening frequency residents',
-            'testing_strategy':'screening frequency residents'},
+            'testing_and_vaccination':'mitigation test frequency residents',
+            'testing_strategy':'mitigation test frequency residents'},
     },
     'german':{
         'metric_name_map':{
